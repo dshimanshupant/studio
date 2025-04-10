@@ -109,7 +109,14 @@ export default function Home() {
             <SidebarSeparator />
             <Button
               variant="outline"
-              className="w-full justify-start bg-green-500 text-white hover:bg-green-700"
+              className="w-full justify-start"
+              style={{
+                backgroundColor: 'rgba(0, 255, 0, 0.1)', // Transparent green
+                color: 'white',
+                width: '70%',
+                marginLeft: '15%',
+                borderColor: 'transparent', // Remove border
+              }}
               onClick={newSession}
             >
               New Session
