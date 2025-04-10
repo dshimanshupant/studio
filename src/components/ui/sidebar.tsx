@@ -20,16 +20,23 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
+export interface Message {
+  role: "user" | "model";
+  content: string;
+}
+
 export type Conversation = {
-  id: string
-  createdAt: Date
-  title: string
+  date: string;
+  summary: string;
+  messages: Message[];
 }
 
 export type SidebarConversations = {
-  conversations: Conversation[]
-  onConversationClick: (conversationId: string) => void
+  chatHistory: Conversation[];
+  loadConversation: (messages: Message[]) => void;
+  addConversation: (conversation: Conversation) => void;
 }
+
 
 const SidebarConversationsContext =
   React.createContext<SidebarConversations | null>(null)
@@ -53,6 +60,15 @@ type SidebarContext = {
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null)
+
+function useSidebarConversations() {
+  const context = React.useContext(SidebarConversationsContext)
+  if (!context) {
+    throw new Error("useSidebarConversations must be used within a SidebarProvider.")
+  }
+
+  return context
+}
 
 function useSidebar() {
   const context = React.useContext(SidebarContext)
@@ -145,16 +161,26 @@ const SidebarProvider = React.forwardRef<
       [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
     )
 
-    const sidebarConversationsValue = React.useMemo<SidebarConversations>(
-      () => ({
-        conversations: [
-          { id: nanoid(), createdAt: new Date(), title: "test1" },
-          { id: nanoid(), createdAt: new Date(), title: "test2" },
-        ],
-        onConversationClick: (id: string) => console.log(id),
-      }),
-      []
-    )
+    const [chatHistory, setChatHistory] = React.useState<Conversation[]>([])
+    const loadConversation = (messages: Message[]) => {
+      // this function will update the main chat. For now it is empty
+    }
+    const addConversation = (conversation: Conversation) => setChatHistory([...chatHistory, conversation])
+
+
+    let sidebarConversationsValue = React.useMemo<SidebarConversations>(() => ({
+      chatHistory, loadConversation, addConversation
+    }), [chatHistory, loadConversation, addConversation]);
+
+    // console.log(sidebarConversationsValue, "sidebarConversationsValue")
+
+    const sidebarConversationsValue = React.useMemo<SidebarConversations>(() => ({
+      chatHistory,
+      loadConversation,
+    }), [chatHistory, loadConversation])
+
+    // console.log(sidebarConversationsValue, "sidebarConversationsValue")
+
 
 
     return (
@@ -179,10 +205,10 @@ const SidebarProvider = React.forwardRef<
           </div>
         </TooltipProvider>
         <SidebarConversationsContext.Provider
-          value={sidebarConversationsValue}
-        >
+          value={sidebarConversationsValue}>
         </SidebarConversationsContext.Provider>
       </SidebarContext.Provider>
+
     )
   }
 )
@@ -676,27 +702,25 @@ const SidebarMenuBadge = React.forwardRef<
 ))
 SidebarMenuBadge.displayName = "SidebarMenuBadge"
 
-const SidebarConversationsComponent = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div">
->(({ className, ...props }, ref) => {
-  const { conversations, onConversationClick } =
-    React.useContext(SidebarConversationsContext) as SidebarConversations
+const SidebarConversationsComponent = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">> (({className,  ...props}, ref) => {
+  const { chatHistory, loadConversation } = useSidebarConversations();
+
   return (
-    <div
+
+     <div
       ref={ref}
       data-sidebar="conversations"
       className={cn("flex min-h-0 flex-1 flex-col gap-2 overflow-auto", className)}
       {...props}
     >
+
       {conversations.map((conversation) => (
         <div
-          key={conversation.id}
+          key={conversation.date}
           className="p-2 hover:bg-gray-100 cursor-pointer"
-          onClick={() => onConversationClick(conversation.id)}
-        >
-          <p className="text-sm font-medium">{conversation.title.slice(0, 20)}...</p>
-          <p className="text-xs text-gray-500">{format(conversation.createdAt, "MMM dd, yyyy")}</p>
+          onClick={() => loadConversation(conversation.messages)}>
+          <p className="text-sm font-medium">{conversation.summary.slice(0, 20)}...</p>
+          <p className="text-xs text-gray-500">{conversation.date}</p>
         </div>
       ))}
     </div>
@@ -821,4 +845,5 @@ export {
   SidebarSeparator,
   SidebarTrigger,
   useSidebar,
+  useSidebarConversations,
 }
