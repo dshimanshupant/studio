@@ -2,12 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
+body{
+  background-color: rgb(0,119,255);
+  color: black;
 }
-
 @layer base {
   :root {
+    font-family: "Inter", sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+
     --background: 0 0% 100%; /* Neutral white or light gray */
     --foreground: 0 0% 20%; /* Dark gray or black for text */
     --card: 0 0% 100%;
@@ -43,6 +47,11 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
+    color-scheme: dark;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     --background: 0 0% 3.9%; /* Dark background for dark mode */
     --foreground: 0 0% 98%; /* Light text for dark mode */
     --card: 0 0% 3.9%;
@@ -85,5 +94,32 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  /* Add base styles for form elements */
+  input,
+  textarea,
+  select {
+    @apply border border-border rounded-md px-3 py-2 bg-muted text-foreground focus:outline-none focus:ring-2 focus:ring-primary;
+  }
+}
+
+/* Define styles for cream background */
+.cream-bg {
+  background-color: #FFFFE0; /* Cream */
+}
+
+/* Apply cream background to specific elements */
+.dropdown-menu,
+.prompt-area,
+.output-section {
+  @apply cream-bg;
+}
+
+/* Ensure the send button stays at the bottom of the prompt area */
+.prompt-area {
+  @apply relative;
+}
+
+.prompt-area button[type="submit"] {
+  @apply absolute bottom-2 right-2; /* Adjust position as needed */
 }
 
