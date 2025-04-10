@@ -1,10 +1,11 @@
 "use client"
 
 import * as React from "react"
+import { format } from "date-fns"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
-
+import { nanoid } from "nanoid"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -18,6 +19,21 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+
+export type Conversation = {
+  id: string
+  createdAt: Date
+  title: string
+}
+
+export type SidebarConversations = {
+  conversations: Conversation[]
+  onConversationClick: (conversationId: string) => void
+}
+
+const SidebarConversationsContext =
+  React.createContext<SidebarConversations | null>(null)
+
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -129,6 +145,18 @@ const SidebarProvider = React.forwardRef<
       [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
     )
 
+    const sidebarConversationsValue = React.useMemo<SidebarConversations>(
+      () => ({
+        conversations: [
+          { id: nanoid(), createdAt: new Date(), title: "test1" },
+          { id: nanoid(), createdAt: new Date(), title: "test2" },
+        ],
+        onConversationClick: (id: string) => console.log(id),
+      }),
+      []
+    )
+
+
     return (
       <SidebarContext.Provider value={contextValue}>
         <TooltipProvider delayDuration={0}>
@@ -150,6 +178,10 @@ const SidebarProvider = React.forwardRef<
             {children}
           </div>
         </TooltipProvider>
+        <SidebarConversationsContext.Provider
+          value={sidebarConversationsValue}
+        >
+        </SidebarConversationsContext.Provider>
       </SidebarContext.Provider>
     )
   }
@@ -644,6 +676,34 @@ const SidebarMenuBadge = React.forwardRef<
 ))
 SidebarMenuBadge.displayName = "SidebarMenuBadge"
 
+const SidebarConversationsComponent = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => {
+  const { conversations, onConversationClick } =
+    React.useContext(SidebarConversationsContext) as SidebarConversations
+  return (
+    <div
+      ref={ref}
+      data-sidebar="conversations"
+      className={cn("flex min-h-0 flex-1 flex-col gap-2 overflow-auto", className)}
+      {...props}
+    >
+      {conversations.map((conversation) => (
+        <div
+          key={conversation.id}
+          className="p-2 hover:bg-gray-100 cursor-pointer"
+          onClick={() => onConversationClick(conversation.id)}
+        >
+          <p className="text-sm font-medium">{conversation.title.slice(0, 20)}...</p>
+          <p className="text-xs text-gray-500">{format(conversation.createdAt, "MMM dd, yyyy")}</p>
+        </div>
+      ))}
+    </div>
+  )
+})
+SidebarConversationsComponent.displayName = "SidebarConversationsComponent"
+
 const SidebarMenuSkeleton = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
@@ -757,6 +817,7 @@ export {
   SidebarMenuSubItem,
   SidebarProvider,
   SidebarRail,
+  SidebarConversationsComponent,
   SidebarSeparator,
   SidebarTrigger,
   useSidebar,
