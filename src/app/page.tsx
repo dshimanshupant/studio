@@ -61,10 +61,11 @@ export default function Home() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     const modelResponse = "This is a simulated response from the LLM model.";
 
+    const modelMessage = { role: "model", content: modelResponse };
     const newHistory = [
       ...messageHistory,
       userMessage,
-      { role: "model", content: modelResponse },
+      modelMessage
     ];
     setMessageHistory(newHistory);
 
@@ -74,10 +75,10 @@ export default function Home() {
       summary: prompt.substring(0, 50) + (prompt.length > 50 ? "..." : ""),
       messages: newHistory,
     };
-    const updatedChatHistory = [...chatHistory, newChatEntry];
-    setChatHistory(updatedChatHistory);
 
     // Store updated history in local storage
+    const updatedChatHistory = [...chatHistory, newChatEntry];
+    setChatHistory(updatedChatHistory);
     localStorage.setItem("chatHistory", JSON.stringify(updatedChatHistory));
 
     setPrompt("");
@@ -86,6 +87,12 @@ export default function Home() {
 
   const loadConversation = (messages: Message[]) => {
     setMessageHistory(messages);
+  };
+
+  const newSession = () => {
+    setMessageHistory([]);
+    setChatHistory([]);
+    localStorage.removeItem("chatHistory");
   };
 
   return (
@@ -100,6 +107,13 @@ export default function Home() {
               <SidebarMenuButton>Chatbot</SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarSeparator />
+            <Button
+              variant="outline"
+              className="w-full justify-start bg-green-500 text-white hover:bg-green-700"
+              onClick={newSession}
+            >
+              New Session
+            </Button>
           </SidebarMenu>
           <SidebarConversationsComponent
             chatHistory={chatHistory}
