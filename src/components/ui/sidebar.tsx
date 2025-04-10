@@ -168,16 +168,17 @@ const SidebarProvider = React.forwardRef<
     const addConversation = (conversation: Conversation) => setChatHistory([...chatHistory, conversation])
 
 
-    let sidebarConversationsValue = React.useMemo<SidebarConversations>(() => ({
+    // Renamed variable to avoid naming collision
+    const sidebarConversationsValueMemo = React.useMemo<SidebarConversations>(() => ({
       chatHistory, loadConversation, addConversation
     }), [chatHistory, loadConversation, addConversation]);
 
     // console.log(sidebarConversationsValue, "sidebarConversationsValue")
 
-    const sidebarConversationsValue = React.useMemo<SidebarConversations>(() => ({
-      chatHistory,
-      loadConversation,
-    }), [chatHistory, loadConversation])
+    // const sidebarConversationsValueMemo = React.useMemo<SidebarConversations>(() => ({
+    //   chatHistory,
+    //   loadConversation,
+    // }), [chatHistory, loadConversation])
 
     // console.log(sidebarConversationsValue, "sidebarConversationsValue")
 
@@ -186,27 +187,27 @@ const SidebarProvider = React.forwardRef<
     return (
       <SidebarContext.Provider value={contextValue}>
         <TooltipProvider delayDuration={0}>
-          <div
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH,
-                "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
-                ...style,
-              } as React.CSSProperties
-            }
-            className={cn(
-              "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar",
-              className
-            )}
-            ref={ref}
-            {...props}
-          >
-            {children}
-          </div>
+          <SidebarConversationsContext.Provider
+            value={sidebarConversationsValueMemo}>
+            <div
+              style={
+                {
+                  "--sidebar-width": SIDEBAR_WIDTH,
+                  "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
+                  ...style,
+                } as React.CSSProperties
+              }
+              className={cn(
+                "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar",
+                className
+              )}
+              ref={ref}
+              {...props}
+            >
+              {children}
+            </div>
+          </SidebarConversationsContext.Provider>
         </TooltipProvider>
-        <SidebarConversationsContext.Provider
-          value={sidebarConversationsValue}>
-        </SidebarConversationsContext.Provider>
       </SidebarContext.Provider>
 
     )
@@ -509,8 +510,11 @@ SidebarGroupLabel.displayName = "SidebarGroupLabel"
 
 const SidebarGroupAction = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<"button"> & { asChild?: boolean }
->(({ className, asChild = false, ...props }, ref) => {
+  React.ComponentProps<"button"> & {
+    asChild?: boolean
+    showOnHover?: boolean
+  }
+>(({ className, asChild = false, showOnHover = false, ...props }, ref) => {
   const Comp = asChild ? Slot : "button"
 
   return (
@@ -522,6 +526,8 @@ const SidebarGroupAction = React.forwardRef<
         // Increases the hit area of the button on mobile.
         "after:absolute after:-inset-2 after:md:hidden",
         "group-data-[collapsible=icon]:hidden",
+        showOnHover &&
+          "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
         className
       )}
       {...props}
@@ -714,7 +720,7 @@ const SidebarConversationsComponent = React.forwardRef<HTMLDivElement, React.Com
       {...props}
     >
 
-      {conversations.map((conversation) => (
+      {chatHistory.map((conversation) => (
         <div
           key={conversation.date}
           className="p-2 hover:bg-gray-100 cursor-pointer"
@@ -847,3 +853,4 @@ export {
   useSidebar,
   useSidebarConversations,
 }
+
