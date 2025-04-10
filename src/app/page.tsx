@@ -108,8 +108,7 @@ export default function Home() {
         </SidebarContent>
       </Sidebar>
       <SidebarInset
-        className="bg-background flex flex-col h-screen"
-        style={{ marginLeft: "16rem" }}
+        className="bg-background flex flex-col h-screen flex-grow"
       >
         <div className="flex-1 flex flex-col p-4">
           {/* Model Selection */}
