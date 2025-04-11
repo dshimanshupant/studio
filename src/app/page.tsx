@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -112,7 +113,7 @@ export default function Home() {
               className="w-full justify-start"
               style={{
                 backgroundColor: 'rgba(0, 255, 0, 0.1)', // Transparent green
-                color: 'white',
+                color: 'black',
                 width: '70%',
                 marginLeft: '15%',
                 borderColor: 'transparent', // Remove border
